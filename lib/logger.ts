@@ -127,6 +127,11 @@ export interface LoggerOptions {
    * @param text The text to log.
    */
   logVerbose?: boolean | ((text: string) => Promise<unknown>);
+
+  /**
+   * Type of the logger.
+   */
+  type?: "devops" | "console";
 }
 
 export function getLogFunction(optionsFunction: undefined | boolean | ((text: string) => Promise<unknown>), normalFunction: (text: string) => Promise<unknown>, undefinedUsesNormalFunction = true): (text: string) => Promise<unknown> {
@@ -267,3 +272,12 @@ export function getAzureDevOpsLogger(options: AzureDevOpsLoggerOptions = {}): Lo
     logVerbose: true
   });
 }
+
+/**
+ * Get the default Logger based on the command line arguments.
+ * @returns The default Logger based on the command line arguments.
+ */
+export function getDefaultLogger(options: LoggerOptions = {}): Logger {
+  return options.type === "devops" ? getAzureDevOpsLogger(options) : getConsoleLogger(options);
+}
+
