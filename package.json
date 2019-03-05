@@ -52,5 +52,21 @@
   },
   "pre-commit": [
     "check:everything"
-  ]
+  ],
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "exclude": [
+      "coverage/**/*",
+      "**/*.d.ts",
+      "**/*.js"
+    ],
+    "reporter": [
+      "text",
+      "html",
+      "cobertura"
+    ],
+    "all": true
+  }
 }
