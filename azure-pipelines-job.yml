@@ -30,6 +30,7 @@ jobs:
     inputs:
       testResultsFiles: '$(System.DefaultWorkingDirectory)/test-results.xml'
       testRunTitle: 'Test results for JavaScript'
+  - script: 'npm run coverage'
   - task: PublishCodeCoverageResults@1
     inputs:
       codeCoverageTool: Cobertura
