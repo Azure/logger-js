@@ -1,6 +1,6 @@
 {
   "name": "@azure/logger-js",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Simple logger for JavaScript projects",
   "main": "dist/lib/logger.js",
   "types": "./dist/lib/logger.d.ts",
