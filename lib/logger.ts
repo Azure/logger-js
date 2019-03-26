@@ -154,11 +154,11 @@ export function getLogFunction(optionsFunction: undefined | boolean | ((text: st
  */
 export function wrapLogger(toWrap: Logger, options: LoggerOptions): Logger {
   return {
-    logInfo: getLogFunction(options.logInfo, toWrap.logInfo),
-    logError: getLogFunction(options.logError, toWrap.logError),
-    logWarning: getLogFunction(options.logWarning, toWrap.logWarning),
-    logSection: getLogFunction(options.logSection, toWrap.logSection),
-    logVerbose: getLogFunction(options.logVerbose, toWrap.logVerbose, false)
+    logInfo: getLogFunction(options.logInfo, (text: string) => toWrap.logInfo(text)),
+    logError: getLogFunction(options.logError, (text: string) => toWrap.logError(text)),
+    logWarning: getLogFunction(options.logWarning, (text: string) => toWrap.logWarning(text)),
+    logSection: getLogFunction(options.logSection, (text: string) => toWrap.logSection(text)),
+    logVerbose: getLogFunction(options.logVerbose, (text: string) => toWrap.logVerbose(text), false)
   };
 }
 
@@ -280,4 +280,3 @@ export function getAzureDevOpsLogger(options: AzureDevOpsLoggerOptions = {}): Lo
 export function getDefaultLogger(options: LoggerOptions = {}): Logger {
   return options.type === "devops" ? getAzureDevOpsLogger(options) : getConsoleLogger(options);
 }
-
