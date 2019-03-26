@@ -102,31 +102,31 @@ export interface LoggerOptions {
    * Log the provided text as informational.
    * @param text The text to log.
    */
-  logInfo?: boolean | ((text: string) => Promise<unknown>);
+  logInfo?: boolean | ((text: string) => unknown);
 
   /**
    * Log the provided text as an error.
    * @param text The text to log.
    */
-  logError?: boolean | ((text: string) => Promise<unknown>);
+  logError?: boolean | ((text: string) => unknown);
 
   /**
    * Log the provided text as a warning.
    * @param text The text to log.
    */
-  logWarning?: boolean | ((text: string) => Promise<unknown>);
+  logWarning?: boolean | ((text: string) => unknown);
 
   /**
    * Log the provided text as a section header.
    * @param text The text to log.
    */
-  logSection?: boolean | ((text: string) => Promise<unknown>);
+  logSection?: boolean | ((text: string) => unknown);
 
   /**
    * Log the provided text as a verbose log.
    * @param text The text to log.
    */
-  logVerbose?: boolean | ((text: string) => Promise<unknown>);
+  logVerbose?: boolean | ((text: string) => unknown);
 
   /**
    * Type of the logger.
@@ -134,13 +134,13 @@ export interface LoggerOptions {
   type?: "devops" | "console";
 }
 
-export function getLogFunction(optionsFunction: undefined | boolean | ((text: string) => Promise<unknown>), normalFunction: (text: string) => Promise<unknown>, undefinedUsesNormalFunction = true): (text: string) => Promise<unknown> {
+export function getLogFunction(optionsFunction: undefined | boolean | ((text: string) => unknown), normalFunction: (text: string) => unknown, undefinedUsesNormalFunction = true): (text: string) => Promise<unknown> {
   let result: ((text: string) => Promise<unknown>) = () => Promise.resolve();
   if (optionsFunction !== false) {
     if (typeof optionsFunction === "function") {
-      result = optionsFunction;
+      result = (text: string) => Promise.resolve(optionsFunction(text));
     } else if (optionsFunction !== undefined || undefinedUsesNormalFunction) {
-      result = normalFunction;
+      result = (text: string) => Promise.resolve(normalFunction(text));
     }
   }
   return result;
@@ -154,11 +154,11 @@ export function getLogFunction(optionsFunction: undefined | boolean | ((text: st
  */
 export function wrapLogger(toWrap: Logger, options: LoggerOptions): Logger {
   return {
-    logInfo: getLogFunction(options.logInfo, toWrap.logInfo),
-    logError: getLogFunction(options.logError, toWrap.logError),
-    logWarning: getLogFunction(options.logWarning, toWrap.logWarning),
-    logSection: getLogFunction(options.logSection, toWrap.logSection),
-    logVerbose: getLogFunction(options.logVerbose, toWrap.logVerbose, false)
+    logInfo: getLogFunction(options.logInfo, (text: string) => toWrap.logInfo(text)),
+    logError: getLogFunction(options.logError, (text: string) => toWrap.logError(text)),
+    logWarning: getLogFunction(options.logWarning, (text: string) => toWrap.logWarning(text)),
+    logSection: getLogFunction(options.logSection, (text: string) => toWrap.logSection(text)),
+    logVerbose: getLogFunction(options.logVerbose, (text: string) => toWrap.logVerbose(text), false)
   };
 }
 
@@ -227,27 +227,22 @@ export function getInMemoryLogger(options: LoggerOptions = {}): InMemoryLogger {
     logInfo: getLogFunction(options.logInfo, (text: string) => {
       allLogs.push(text);
       infoLogs.push(text);
-      return Promise.resolve();
     }),
     logError: getLogFunction(options.logError, (text: string) => {
       allLogs.push(text);
       errorLogs.push(text);
-      return Promise.resolve();
     }),
     logWarning: getLogFunction(options.logWarning, (text: string) => {
       allLogs.push(text);
       warningLogs.push(text);
-      return Promise.resolve();
     }),
     logSection: getLogFunction(options.logSection, (text: string) => {
       allLogs.push(text);
       sectionLogs.push(text);
-      return Promise.resolve();
     }),
     logVerbose: getLogFunction(options.logVerbose, (text: string) => {
       allLogs.push(text);
       verboseLogs.push(text);
-      return Promise.resolve();
     }, false)
   };
 }
@@ -280,4 +275,3 @@ export function getAzureDevOpsLogger(options: AzureDevOpsLoggerOptions = {}): Lo
 export function getDefaultLogger(options: LoggerOptions = {}): Logger {
   return options.type === "devops" ? getAzureDevOpsLogger(options) : getConsoleLogger(options);
 }
-
