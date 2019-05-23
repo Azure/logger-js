@@ -1,12 +1,13 @@
 {
   "name": "@azure/logger-js",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Simple logger for JavaScript projects",
   "main": "dist/lib/logger.js",
   "types": "./dist/lib/logger.d.ts",
   "scripts": {
     "build": "run-p tslint build:tsc",
     "build:tsc": "tsc -p tsconfig.json",
+    "build-test": "npm run build && npm test",
     "check:everything": "ts-node ./.scripts/checkEverything.ts",
     "coverage": "nyc mocha",
     "prepack": "npm install && npm run build",

@@ -275,3 +275,18 @@ export function getAzureDevOpsLogger(options: AzureDevOpsLoggerOptions = {}): Lo
 export function getDefaultLogger(options: LoggerOptions = {}): Logger {
   return options.type === "devops" ? getAzureDevOpsLogger(options) : getConsoleLogger(options);
 }
+
+/**
+ * Prefix the provided logger's logs with a UTC timestamp
+ */
+export function timestamps(logger: Logger): Logger {
+  return prefix(logger, () => `${new Date().toISOString()}: `);
+}
+
+/**
+ * Prefix the provided logger's logs with line numbers.
+ */
+export function lineNumbers(logger: Logger, firstLineNumber = 1): Logger {
+  let lineNumber: number = firstLineNumber;
+  return prefix(logger, () => `${lineNumber++}. `);
+}
