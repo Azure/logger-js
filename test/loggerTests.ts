@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { assertEx } from "@ts-common/azure-js-dev-tools";
 
-import { getAzureDevOpsLogger, getCompositeLogger, getConsoleLogger, getInMemoryLogger, InMemoryLogger, Logger, prefix, wrapLogger, indent } from "../lib/logger";
+import { getAzureDevOpsLogger, getCompositeLogger, getConsoleLogger, getInMemoryLogger, InMemoryLogger, Logger, prefix, wrapLogger, indent, timestamps, lineNumbers } from "../lib/logger";
 
 describe("logger.ts", function () {
   describe("getCompositeLogger()", function () {
@@ -502,6 +502,218 @@ describe("logger.ts", function () {
       assert.deepEqual(logger.warningLogs, ["    c"]);
       assert.deepEqual(logger.sectionLogs, ["    d"]);
       assert.deepEqual(logger.verboseLogs, ["    e"]);
+    });
+  });
+
+  it("timestamps()", function () {
+    const logger: InMemoryLogger = getInMemoryLogger({ logVerbose: true });
+    const timestampLogger: Logger = timestamps(logger);
+
+    timestampLogger.logError("a");
+    assert.strictEqual(logger.allLogs.length, 1);
+    assert(logger.allLogs[0].endsWith(": a"));
+    assert.deepEqual(logger.infoLogs, []);
+    assert.strictEqual(logger.errorLogs.length, 1);
+    assert(logger.errorLogs[0].endsWith(": a"));
+    assert.deepEqual(logger.warningLogs, []);
+    assert.deepEqual(logger.sectionLogs, []);
+    assert.deepEqual(logger.verboseLogs, []);
+
+    timestampLogger.logInfo("b");
+    assert.strictEqual(logger.allLogs.length, 2);
+    assert(logger.allLogs[0].endsWith(": a"));
+    assert(logger.allLogs[1].endsWith(": b"));
+    assert.strictEqual(logger.infoLogs.length, 1);
+    assert(logger.infoLogs[0].endsWith(": b"));
+    assert.strictEqual(logger.errorLogs.length, 1);
+    assert(logger.errorLogs[0].endsWith(": a"));
+    assert.deepEqual(logger.warningLogs, []);
+    assert.deepEqual(logger.sectionLogs, []);
+    assert.deepEqual(logger.verboseLogs, []);
+
+    timestampLogger.logWarning("c");
+    assert.strictEqual(logger.allLogs.length, 3);
+    assert(logger.allLogs[0].endsWith(": a"));
+    assert(logger.allLogs[1].endsWith(": b"));
+    assert(logger.allLogs[2].endsWith(": c"));
+    assert.strictEqual(logger.infoLogs.length, 1);
+    assert(logger.infoLogs[0].endsWith(": b"));
+    assert.strictEqual(logger.errorLogs.length, 1);
+    assert(logger.errorLogs[0].endsWith(": a"));
+    assert.strictEqual(logger.warningLogs.length, 1);
+    assert(logger.warningLogs[0].endsWith(": c"));
+    assert.deepEqual(logger.sectionLogs, []);
+    assert.deepEqual(logger.verboseLogs, []);
+
+    timestampLogger.logSection("d");
+    assert.strictEqual(logger.allLogs.length, 4);
+    assert(logger.allLogs[0].endsWith(": a"));
+    assert(logger.allLogs[1].endsWith(": b"));
+    assert(logger.allLogs[2].endsWith(": c"));
+    assert(logger.allLogs[3].endsWith(": d"));
+    assert.strictEqual(logger.infoLogs.length, 1);
+    assert(logger.infoLogs[0].endsWith(": b"));
+    assert.strictEqual(logger.errorLogs.length, 1);
+    assert(logger.errorLogs[0].endsWith(": a"));
+    assert.strictEqual(logger.warningLogs.length, 1);
+    assert(logger.warningLogs[0].endsWith(": c"));
+    assert.strictEqual(logger.sectionLogs.length, 1);
+    assert(logger.sectionLogs[0].endsWith(": d"));
+    assert.deepEqual(logger.verboseLogs, []);
+
+    timestampLogger.logVerbose("e");
+    assert.strictEqual(logger.allLogs.length, 5);
+    assert(logger.allLogs[0].endsWith(": a"));
+    assert(logger.allLogs[1].endsWith(": b"));
+    assert(logger.allLogs[2].endsWith(": c"));
+    assert(logger.allLogs[3].endsWith(": d"));
+    assert(logger.allLogs[4].endsWith(": e"));
+    assert.strictEqual(logger.infoLogs.length, 1);
+    assert(logger.infoLogs[0].endsWith(": b"));
+    assert.strictEqual(logger.errorLogs.length, 1);
+    assert(logger.errorLogs[0].endsWith(": a"));
+    assert.strictEqual(logger.warningLogs.length, 1);
+    assert(logger.warningLogs[0].endsWith(": c"));
+    assert.strictEqual(logger.sectionLogs.length, 1);
+    assert(logger.sectionLogs[0].endsWith(": d"));
+    assert.strictEqual(logger.verboseLogs.length, 1);
+    assert(logger.verboseLogs[0].endsWith(": e"));
+  });
+
+  describe("lineNumbers()", function () {
+    it("with no firstLineNumber argument", function () {
+      const logger: InMemoryLogger = getInMemoryLogger({ logVerbose: true });
+      const indentedLogger: Logger = lineNumbers(logger);
+
+      indentedLogger.logInfo("a");
+      assert.deepEqual(logger.allLogs, ["1. a"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logError("b");
+      assert.deepEqual(logger.allLogs, ["1. a", "2. b"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, ["2. b"]);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logWarning("c");
+      assert.deepEqual(logger.allLogs, ["1. a", "2. b", "3. c"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, ["2. b"]);
+      assert.deepEqual(logger.warningLogs, ["3. c"]);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logSection("d");
+      assert.deepEqual(logger.allLogs, ["1. a", "2. b", "3. c", "4. d"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, ["2. b"]);
+      assert.deepEqual(logger.warningLogs, ["3. c"]);
+      assert.deepEqual(logger.sectionLogs, ["4. d"]);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logVerbose("e");
+      assert.deepEqual(logger.allLogs, ["1. a", "2. b", "3. c", "4. d", "5. e"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, ["2. b"]);
+      assert.deepEqual(logger.warningLogs, ["3. c"]);
+      assert.deepEqual(logger.sectionLogs, ["4. d"]);
+      assert.deepEqual(logger.verboseLogs, ["5. e"]);
+    });
+
+    it("with undefined firstLineNumber", function () {
+      const logger: InMemoryLogger = getInMemoryLogger({ logVerbose: true });
+      const indentedLogger: Logger = lineNumbers(logger, undefined);
+
+      indentedLogger.logInfo("a");
+      assert.deepEqual(logger.allLogs, ["1. a"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logError("b");
+      assert.deepEqual(logger.allLogs, ["1. a", "2. b"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, ["2. b"]);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logWarning("c");
+      assert.deepEqual(logger.allLogs, ["1. a", "2. b", "3. c"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, ["2. b"]);
+      assert.deepEqual(logger.warningLogs, ["3. c"]);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logSection("d");
+      assert.deepEqual(logger.allLogs, ["1. a", "2. b", "3. c", "4. d"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, ["2. b"]);
+      assert.deepEqual(logger.warningLogs, ["3. c"]);
+      assert.deepEqual(logger.sectionLogs, ["4. d"]);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logVerbose("e");
+      assert.deepEqual(logger.allLogs, ["1. a", "2. b", "3. c", "4. d", "5. e"]);
+      assert.deepEqual(logger.infoLogs, ["1. a"]);
+      assert.deepEqual(logger.errorLogs, ["2. b"]);
+      assert.deepEqual(logger.warningLogs, ["3. c"]);
+      assert.deepEqual(logger.sectionLogs, ["4. d"]);
+      assert.deepEqual(logger.verboseLogs, ["5. e"]);
+    });
+
+    it("with 0 firstLineNumber", function () {
+      const logger: InMemoryLogger = getInMemoryLogger({ logVerbose: true });
+      const indentedLogger: Logger = lineNumbers(logger, 0);
+
+      indentedLogger.logInfo("a");
+      assert.deepEqual(logger.allLogs, ["0. a"]);
+      assert.deepEqual(logger.infoLogs, ["0. a"]);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logError("b");
+      assert.deepEqual(logger.allLogs, ["0. a", "1. b"]);
+      assert.deepEqual(logger.infoLogs, ["0. a"]);
+      assert.deepEqual(logger.errorLogs, ["1. b"]);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logWarning("c");
+      assert.deepEqual(logger.allLogs, ["0. a", "1. b", "2. c"]);
+      assert.deepEqual(logger.infoLogs, ["0. a"]);
+      assert.deepEqual(logger.errorLogs, ["1. b"]);
+      assert.deepEqual(logger.warningLogs, ["2. c"]);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logSection("d");
+      assert.deepEqual(logger.allLogs, ["0. a", "1. b", "2. c", "3. d"]);
+      assert.deepEqual(logger.infoLogs, ["0. a"]);
+      assert.deepEqual(logger.errorLogs, ["1. b"]);
+      assert.deepEqual(logger.warningLogs, ["2. c"]);
+      assert.deepEqual(logger.sectionLogs, ["3. d"]);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      indentedLogger.logVerbose("e");
+      assert.deepEqual(logger.allLogs, ["0. a", "1. b", "2. c", "3. d", "4. e"]);
+      assert.deepEqual(logger.infoLogs, ["0. a"]);
+      assert.deepEqual(logger.errorLogs, ["1. b"]);
+      assert.deepEqual(logger.warningLogs, ["2. c"]);
+      assert.deepEqual(logger.sectionLogs, ["3. d"]);
+      assert.deepEqual(logger.verboseLogs, ["4. e"]);
     });
   });
 });
