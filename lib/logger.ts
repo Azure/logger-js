@@ -1,3 +1,5 @@
+import { getLines } from "@ts-common/azure-js-dev-tools";
+
 /**
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for
@@ -289,4 +291,31 @@ export function timestamps(logger: Logger): Logger {
 export function lineNumbers(logger: Logger, firstLineNumber = 1): Logger {
   let lineNumber: number = firstLineNumber;
   return prefix(logger, () => `${lineNumber++}. `);
+}
+
+/**
+ * Individually log each of the lines in the provided text using the provided log function.
+ * @param text The text to split and log.
+ * @param log The function that will log each of the lines of text.
+ */
+async function logLines(text: string, log: (text: string) => unknown): Promise<void> {
+  const lines: string[] = getLines(text);
+  for (const line of lines) {
+    await Promise.resolve(log(line));
+  }
+}
+
+/**
+ * Wrap the provided logger with logic that will split logs into individual lines before they are
+ * logged.
+ * @param logger The Logger to wrap.
+ */
+export function splitLines(logger: Logger): Logger {
+  return wrapLogger(logger, {
+    logError: (text: string) => logLines(text, logger.logError.bind(logger)),
+    logInfo: (text: string) => logLines(text, logger.logInfo.bind(logger)),
+    logSection: (text: string) => logLines(text, logger.logSection.bind(logger)),
+    logVerbose: (text: string) => logLines(text, logger.logVerbose.bind(logger)),
+    logWarning: (text: string) => logLines(text, logger.logWarning.bind(logger)),
+  });
 }
