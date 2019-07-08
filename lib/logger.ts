@@ -1,5 +1,3 @@
-import { getLines } from "@ts-common/azure-js-dev-tools";
-
 /**
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for
@@ -291,6 +289,14 @@ export function timestamps(logger: Logger): Logger {
 export function lineNumbers(logger: Logger, firstLineNumber = 1): Logger {
   let lineNumber: number = firstLineNumber;
   return prefix(logger, () => `${lineNumber++}. `);
+}
+
+/**
+ * Get the lines of the provided text.
+ * @param text The text to get the lines of.
+ */
+export function getLines(text: string | undefined): string[] {
+  return text == undefined ? [] : text.split(/\r?\n/);
 }
 
 /**

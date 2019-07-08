@@ -1,6 +1,6 @@
 {
   "name": "@azure/logger-js",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Simple logger for JavaScript projects",
   "main": "dist/lib/logger.js",
   "types": "./dist/lib/logger.d.ts",
@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/Azure/logger-js#readme",
   "devDependencies": {
-    "@ts-common/azure-js-dev-tools": "^16.0.0",
+    "@ts-common/azure-js-dev-tools": "^19.4.0",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.6",
     "chai": "^4.2.0",
