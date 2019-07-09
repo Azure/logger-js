@@ -906,5 +906,95 @@ describe("logger.ts", function () {
       assert.deepEqual(logger.sectionLogs, ["", "e", ""]);
       assert.deepEqual(logger.verboseLogs, ["f", "gh", "ijklmn", "", "op"]);
     });
+
+    it("with empty array", async function () {
+      const logger: InMemoryLogger = getInMemoryLogger({ logVerbose: true });
+      const splitLogger: Logger = splitLines(logger);
+
+      await splitLogger.logInfo([]);
+      assert.deepEqual(logger.allLogs, []);
+      assert.deepEqual(logger.infoLogs, []);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      await splitLogger.logError([]);
+      assert.deepEqual(logger.allLogs, []);
+      assert.deepEqual(logger.infoLogs, []);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      await splitLogger.logWarning([]);
+      assert.deepEqual(logger.allLogs, []);
+      assert.deepEqual(logger.infoLogs, []);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      await splitLogger.logSection([]);
+      assert.deepEqual(logger.allLogs, []);
+      assert.deepEqual(logger.infoLogs, []);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      await splitLogger.logVerbose([]);
+      assert.deepEqual(logger.allLogs, []);
+      assert.deepEqual(logger.infoLogs, []);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+    });
+
+    it("with single-line text array", async function () {
+      const logger: InMemoryLogger = getInMemoryLogger({ logVerbose: true });
+      const splitLogger: Logger = splitLines(logger);
+
+      await splitLogger.logInfo(["a"]);
+      assert.deepEqual(logger.allLogs, ["a"]);
+      assert.deepEqual(logger.infoLogs, ["a"]);
+      assert.deepEqual(logger.errorLogs, []);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      await splitLogger.logError(["b"]);
+      assert.deepEqual(logger.allLogs, ["a", "b"]);
+      assert.deepEqual(logger.infoLogs, ["a"]);
+      assert.deepEqual(logger.errorLogs, ["b"]);
+      assert.deepEqual(logger.warningLogs, []);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      await splitLogger.logWarning(["c"]);
+      assert.deepEqual(logger.allLogs, ["a", "b", "c"]);
+      assert.deepEqual(logger.infoLogs, ["a"]);
+      assert.deepEqual(logger.errorLogs, ["b"]);
+      assert.deepEqual(logger.warningLogs, ["c"]);
+      assert.deepEqual(logger.sectionLogs, []);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      await splitLogger.logSection(["d"]);
+      assert.deepEqual(logger.allLogs, ["a", "b", "c", "d"]);
+      assert.deepEqual(logger.infoLogs, ["a"]);
+      assert.deepEqual(logger.errorLogs, ["b"]);
+      assert.deepEqual(logger.warningLogs, ["c"]);
+      assert.deepEqual(logger.sectionLogs, ["d"]);
+      assert.deepEqual(logger.verboseLogs, []);
+
+      await splitLogger.logVerbose(["e"]);
+      assert.deepEqual(logger.allLogs, ["a", "b", "c", "d", "e"]);
+      assert.deepEqual(logger.infoLogs, ["a"]);
+      assert.deepEqual(logger.errorLogs, ["b"]);
+      assert.deepEqual(logger.warningLogs, ["c"]);
+      assert.deepEqual(logger.sectionLogs, ["d"]);
+      assert.deepEqual(logger.verboseLogs, ["e"]);
+    });
   });
 });

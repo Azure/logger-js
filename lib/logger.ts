@@ -336,18 +336,13 @@ export function getLines(text: string | undefined): string[] {
  * @param text The text to split and log.
  * @param log The function that will log each of the lines of text.
  */
-async function logLines(text: string | string[], log: (text: string) => unknown): Promise<void> {
+async function logLines(text: string | string[], log: (text: string | string[]) => unknown): Promise<void> {
   if (text != undefined) {
     const lines: string[] = [];
-    if (typeof text === "string") {
-      text = [text];
-    }
-    for (const textLine of text) {
+    for (const textLine of toArray(text)) {
       lines.push(...getLines(textLine));
     }
-    for (const line of lines) {
-      await Promise.resolve(log(line));
-    }
+    await Promise.resolve(log(lines));
   }
 }
 
