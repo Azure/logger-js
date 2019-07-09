@@ -207,7 +207,7 @@ describe("logger.ts", function () {
     it("with overridden logInfo()", async function () {
       const logger: InMemoryLogger = getInMemoryLogger();
       const wrappedLogger: Logger = wrapLogger(logger, {
-        logInfo: (text: string) => logger.logInfo(`[INFO] ${text}`)
+        logInfo: (text: string | string[]) => logger.logInfo(`[INFO] ${text}`)
       });
 
       await wrappedLogger.logInfo("abc");
@@ -224,7 +224,7 @@ describe("logger.ts", function () {
     it("with overridden logError()", async function () {
       const logger: InMemoryLogger = getInMemoryLogger();
       const wrappedLogger: Logger = wrapLogger(logger, {
-        logError: (text: string) => logger.logError(`[ERROR] ${text}`)
+        logError: (text: string | string[]) => logger.logError(`[ERROR] ${text}`)
       });
 
       await wrappedLogger.logInfo("abc");
