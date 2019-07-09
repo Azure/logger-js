@@ -40,10 +40,10 @@ export interface Logger {
 }
 
 function addPrefix(text: string | string[], prefix: string | (() => string)): string[] {
-  const prefixText: string = typeof prefix === "string" ? prefix : prefix();
   text = toArray(text);
-  for (let i = 0; i < text.length; ++i) {
-    text[i] = `${prefixText}${text[i]}`;
+  const prefixText: string = typeof prefix === "string" ? prefix : prefix();
+  if (prefixText) {
+    text = text.map((textElement: string) => `${prefixText}${textElement}`);
   }
   return text;
 }
