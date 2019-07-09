@@ -12,31 +12,40 @@ export interface Logger {
    * Log the provided text as informational.
    * @param text The text to log.
    */
-  logInfo(text: string): Promise<unknown>;
+  logInfo(text: string | string[]): Promise<unknown>;
 
   /**
    * Log the provided text as an error.
    * @param text The text to log.
    */
-  logError(text: string): Promise<unknown>;
+  logError(text: string | string[]): Promise<unknown>;
 
   /**
    * Log the provided text as a warning.
    * @param text The text to log.
    */
-  logWarning(text: string): Promise<unknown>;
+  logWarning(text: string | string[]): Promise<unknown>;
 
   /**
    * Log the provided text as a section header.
    * @param text The text to log.
    */
-  logSection(text: string): Promise<unknown>;
+  logSection(text: string | string[]): Promise<unknown>;
 
   /**
    * Log the provided text as a verbose log.
    * @param text The text to log.
    */
-  logVerbose(text: string): Promise<unknown>;
+  logVerbose(text: string | string[]): Promise<unknown>;
+}
+
+function addPrefix(text: string | string[], prefix: string | (() => string)): string[] {
+  const prefixText: string = typeof prefix === "string" ? prefix : prefix();
+  text = toArray(text);
+  for (let i = 0; i < text.length; ++i) {
+    text[i] = `${prefixText}${text[i]}`;
+  }
+  return text;
 }
 
 /**
@@ -45,13 +54,12 @@ export interface Logger {
  * @param prefix The prefix to add to each log message.
  */
 export function prefix(toWrap: Logger, prefix: string | (() => string)): Logger {
-  const prefixFunction: (() => string) = typeof prefix === "string" ? () => prefix : prefix;
   return {
-    logInfo: (text: string) => toWrap.logInfo(`${prefixFunction()}${text}`),
-    logError: (text: string) => toWrap.logError(`${prefixFunction()}${text}`),
-    logWarning: (text: string) => toWrap.logWarning(`${prefixFunction()}${text}`),
-    logSection: (text: string) => toWrap.logSection(`${prefixFunction()}${text}`),
-    logVerbose: (text: string) => toWrap.logVerbose(`${prefixFunction()}${text}`),
+    logInfo: (text: string | string[]) => toWrap.logInfo(addPrefix(text, prefix)),
+    logError: (text: string | string[]) => toWrap.logError(addPrefix(text, prefix)),
+    logWarning: (text: string | string[]) => toWrap.logWarning(addPrefix(text, prefix)),
+    logSection: (text: string | string[]) => toWrap.logSection(addPrefix(text, prefix)),
+    logVerbose: (text: string | string[]) => toWrap.logVerbose(addPrefix(text, prefix)),
   };
 }
 
@@ -84,11 +92,11 @@ export function getCompositeLogger(...loggers: (Logger | undefined)[]): Logger {
     result = definedLoggers[0];
   } else {
     result = {
-      logInfo: (text: string) => Promise.all(definedLoggers.map((logger: Logger) => logger.logInfo(text))),
-      logError: (text: string) => Promise.all(definedLoggers.map((logger: Logger) => logger.logError(text))),
-      logWarning: (text: string) => Promise.all(definedLoggers.map((logger: Logger) => logger.logWarning(text))),
-      logSection: (text: string) => Promise.all(definedLoggers.map((logger: Logger) => logger.logSection(text))),
-      logVerbose: (text: string) => Promise.all(definedLoggers.map((logger: Logger) => logger.logVerbose(text)))
+      logInfo: (text: string | string[]) => Promise.all(definedLoggers.map((logger: Logger) => logger.logInfo(text))),
+      logError: (text: string | string[]) => Promise.all(definedLoggers.map((logger: Logger) => logger.logError(text))),
+      logWarning: (text: string | string[]) => Promise.all(definedLoggers.map((logger: Logger) => logger.logWarning(text))),
+      logSection: (text: string | string[]) => Promise.all(definedLoggers.map((logger: Logger) => logger.logSection(text))),
+      logVerbose: (text: string | string[]) => Promise.all(definedLoggers.map((logger: Logger) => logger.logVerbose(text)))
     };
   }
   return result;
@@ -102,31 +110,31 @@ export interface LoggerOptions {
    * Log the provided text as informational.
    * @param text The text to log.
    */
-  logInfo?: boolean | ((text: string) => unknown);
+  logInfo?: boolean | ((text: string | string[]) => unknown);
 
   /**
    * Log the provided text as an error.
    * @param text The text to log.
    */
-  logError?: boolean | ((text: string) => unknown);
+  logError?: boolean | ((text: string | string[]) => unknown);
 
   /**
    * Log the provided text as a warning.
    * @param text The text to log.
    */
-  logWarning?: boolean | ((text: string) => unknown);
+  logWarning?: boolean | ((text: string | string[]) => unknown);
 
   /**
    * Log the provided text as a section header.
    * @param text The text to log.
    */
-  logSection?: boolean | ((text: string) => unknown);
+  logSection?: boolean | ((text: string | string[]) => unknown);
 
   /**
    * Log the provided text as a verbose log.
    * @param text The text to log.
    */
-  logVerbose?: boolean | ((text: string) => unknown);
+  logVerbose?: boolean | ((text: string | string[]) => unknown);
 
   /**
    * Type of the logger.
@@ -134,13 +142,13 @@ export interface LoggerOptions {
   type?: "devops" | "console";
 }
 
-export function getLogFunction(optionsFunction: undefined | boolean | ((text: string) => unknown), normalFunction: (text: string) => unknown, undefinedUsesNormalFunction = true): (text: string) => Promise<unknown> {
-  let result: ((text: string) => Promise<unknown>) = () => Promise.resolve();
+export function getLogFunction(optionsFunction: undefined | boolean | ((text: string | string[]) => unknown), normalFunction: (text: string | string[]) => unknown, undefinedUsesNormalFunction = true): (text: string | string[]) => Promise<unknown> {
+  let result: ((text: string | string[]) => Promise<unknown>) = () => Promise.resolve();
   if (optionsFunction !== false) {
     if (typeof optionsFunction === "function") {
-      result = (text: string) => Promise.resolve(optionsFunction(text));
+      result = (text: string | string[]) => Promise.resolve(optionsFunction(text));
     } else if (optionsFunction !== undefined || undefinedUsesNormalFunction) {
-      result = (text: string) => Promise.resolve(normalFunction(text));
+      result = (text: string | string[]) => Promise.resolve(normalFunction(text));
     }
   }
   return result;
@@ -154,12 +162,28 @@ export function getLogFunction(optionsFunction: undefined | boolean | ((text: st
  */
 export function wrapLogger(toWrap: Logger, options: LoggerOptions): Logger {
   return {
-    logInfo: getLogFunction(options.logInfo, (text: string) => toWrap.logInfo(text)),
-    logError: getLogFunction(options.logError, (text: string) => toWrap.logError(text)),
-    logWarning: getLogFunction(options.logWarning, (text: string) => toWrap.logWarning(text)),
-    logSection: getLogFunction(options.logSection, (text: string) => toWrap.logSection(text)),
-    logVerbose: getLogFunction(options.logVerbose, (text: string) => toWrap.logVerbose(text), false)
+    logInfo: getLogFunction(options.logInfo, (text: string | string[]) => toWrap.logInfo(text)),
+    logError: getLogFunction(options.logError, (text: string | string[]) => toWrap.logError(text)),
+    logWarning: getLogFunction(options.logWarning, (text: string | string[]) => toWrap.logWarning(text)),
+    logSection: getLogFunction(options.logSection, (text: string | string[]) => toWrap.logSection(text)),
+    logVerbose: getLogFunction(options.logVerbose, (text: string | string[]) => toWrap.logVerbose(text), false)
   };
+}
+
+function consoleLog(text: string | string[]): Promise<void> {
+  text = toArray(text);
+  for (const textLine of text) {
+    console.log(textLine);
+  }
+  return Promise.resolve();
+}
+
+function consoleError(text: string | string[]): Promise<void> {
+  text = toArray(text);
+  for (const textLine of text) {
+    console.error(textLine);
+  }
+  return Promise.resolve();
 }
 
 /**
@@ -168,11 +192,11 @@ export function wrapLogger(toWrap: Logger, options: LoggerOptions): Logger {
 export function getConsoleLogger(options: LoggerOptions = {}): Logger {
   return wrapLogger(
     {
-      logInfo: (text: string) => Promise.resolve(console.log(text)),
-      logError: (text: string) => Promise.resolve(console.error(text)),
-      logWarning: (text: string) => Promise.resolve(console.log(text)),
-      logSection: (text: string) => Promise.resolve(console.log(text)),
-      logVerbose: (text: string) => Promise.resolve(console.log(text))
+      logInfo: consoleLog,
+      logError: consoleError,
+      logWarning: consoleLog,
+      logSection: consoleLog,
+      logVerbose: consoleLog
     },
     options);
 }
@@ -224,25 +248,25 @@ export function getInMemoryLogger(options: LoggerOptions = {}): InMemoryLogger {
     warningLogs,
     sectionLogs,
     verboseLogs,
-    logInfo: getLogFunction(options.logInfo, (text: string) => {
-      allLogs.push(text);
-      infoLogs.push(text);
+    logInfo: getLogFunction(options.logInfo, (text: string | string[]) => {
+      allLogs.push(...toArray(text));
+      infoLogs.push(...toArray(text));
     }),
-    logError: getLogFunction(options.logError, (text: string) => {
-      allLogs.push(text);
-      errorLogs.push(text);
+    logError: getLogFunction(options.logError, (text: string | string[]) => {
+      allLogs.push(...toArray(text));
+      errorLogs.push(...toArray(text));
     }),
-    logWarning: getLogFunction(options.logWarning, (text: string) => {
-      allLogs.push(text);
-      warningLogs.push(text);
+    logWarning: getLogFunction(options.logWarning, (text: string | string[]) => {
+      allLogs.push(...toArray(text));
+      warningLogs.push(...toArray(text));
     }),
-    logSection: getLogFunction(options.logSection, (text: string) => {
-      allLogs.push(text);
-      sectionLogs.push(text);
+    logSection: getLogFunction(options.logSection, (text: string | string[]) => {
+      allLogs.push(...toArray(text));
+      sectionLogs.push(...toArray(text));
     }),
-    logVerbose: getLogFunction(options.logVerbose, (text: string) => {
-      allLogs.push(text);
-      verboseLogs.push(text);
+    logVerbose: getLogFunction(options.logVerbose, (text: string | string[]) => {
+      allLogs.push(...toArray(text));
+      verboseLogs.push(...toArray(text));
     }, false)
   };
 }
@@ -257,13 +281,13 @@ export interface AzureDevOpsLoggerOptions extends LoggerOptions {
 export function getAzureDevOpsLogger(options: AzureDevOpsLoggerOptions = {}): Logger {
   const innerLogger: Logger = options.toWrap || getConsoleLogger({
     ...options,
-    logError: ("logError" in options ? options.logError : (text: string) => Promise.resolve(console.log(text))),
+    logError: ("logError" in options ? options.logError : (text: string | string[]) => Promise.resolve(console.log(text))),
   });
   return wrapLogger(innerLogger, {
-    logError: (text: string) => innerLogger.logError(`##[error]${text}`),
+    logError: (text: string | string[]) => innerLogger.logError(addPrefix(text, `##[error]`)),
     logInfo: true,
-    logSection: (text: string) => innerLogger.logSection(`##[section]${text}`),
-    logWarning: (text: string) => innerLogger.logWarning(`##[warning]${text}`),
+    logSection: (text: string | string[]) => innerLogger.logSection(addPrefix(text, `##[section]`)),
+    logWarning: (text: string | string[]) => innerLogger.logWarning(addPrefix(text, `##[warning]`)),
     logVerbose: true
   });
 }
@@ -291,6 +315,14 @@ export function lineNumbers(logger: Logger, firstLineNumber = 1): Logger {
   return prefix(logger, () => `${lineNumber++}. `);
 }
 
+export function toArray(text: string | string[]): string[] {
+  return typeof text === "string" ? [text] : text;
+}
+
+export function joinLines(text: string | string[]): string {
+  return typeof text === "string" ? text : text.join("\n");
+}
+
 /**
  * Get the lines of the provided text.
  * @param text The text to get the lines of.
@@ -304,10 +336,18 @@ export function getLines(text: string | undefined): string[] {
  * @param text The text to split and log.
  * @param log The function that will log each of the lines of text.
  */
-async function logLines(text: string, log: (text: string) => unknown): Promise<void> {
-  const lines: string[] = getLines(text);
-  for (const line of lines) {
-    await Promise.resolve(log(line));
+async function logLines(text: string | string[], log: (text: string) => unknown): Promise<void> {
+  if (text != undefined) {
+    const lines: string[] = [];
+    if (typeof text === "string") {
+      text = [text];
+    }
+    for (const textLine of text) {
+      lines.push(...getLines(textLine));
+    }
+    for (const line of lines) {
+      await Promise.resolve(log(line));
+    }
   }
 }
 
@@ -318,10 +358,10 @@ async function logLines(text: string, log: (text: string) => unknown): Promise<v
  */
 export function splitLines(logger: Logger): Logger {
   return wrapLogger(logger, {
-    logError: (text: string) => logLines(text, logger.logError.bind(logger)),
-    logInfo: (text: string) => logLines(text, logger.logInfo.bind(logger)),
-    logSection: (text: string) => logLines(text, logger.logSection.bind(logger)),
-    logVerbose: (text: string) => logLines(text, logger.logVerbose.bind(logger)),
-    logWarning: (text: string) => logLines(text, logger.logWarning.bind(logger)),
+    logError: (text: string | string[]) => logLines(text, logger.logError.bind(logger)),
+    logInfo: (text: string | string[]) => logLines(text, logger.logInfo.bind(logger)),
+    logSection: (text: string | string[]) => logLines(text, logger.logSection.bind(logger)),
+    logVerbose: (text: string | string[]) => logLines(text, logger.logVerbose.bind(logger)),
+    logWarning: (text: string | string[]) => logLines(text, logger.logWarning.bind(logger)),
   });
 }
