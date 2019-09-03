@@ -63,3 +63,5 @@ typings/
 # Generated code
 dist/
 test-results.xml
+
+package-deps.json
