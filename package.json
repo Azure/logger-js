@@ -10,7 +10,7 @@
     "build-test": "npm run build && npm test",
     "check:everything": "ts-node ./.scripts/checkEverything.ts",
     "coverage": "nyc mocha",
-    "prepack": "npm install && npm run build",
+    "prepack": "npm run build",
     "test": "mocha",
     "tslint": "tslint -p . -c tslint.json"
   },
