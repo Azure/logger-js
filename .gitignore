@@ -65,3 +65,4 @@ dist/
 test-results.xml
 
 package-deps.json
+package-lock.json
