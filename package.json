@@ -51,7 +51,6 @@
     "typescript": "^3.6.3"
   },
   "pre-commit": [
-    "check:everything"
   ],
   "nyc": {
     "extension": [
