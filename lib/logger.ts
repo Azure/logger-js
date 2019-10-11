@@ -186,6 +186,18 @@ function consoleError(text: string | string[]): Promise<void> {
   return Promise.resolve();
 }
 
+export function getDummyLogger(): Logger {
+  const dummyLogFn = (_: string | string[]) => Promise.resolve();
+
+  return {
+    logInfo: dummyLogFn,
+    logError: dummyLogFn,
+    logWarning: dummyLogFn,
+    logSection: dummyLogFn,
+    logVerbose: dummyLogFn,
+  };
+}
+
 /**
  * Get a Logger that will send its logs to the console.
  */
@@ -281,7 +293,7 @@ export interface AzureDevOpsLoggerOptions extends LoggerOptions {
 export function getAzureDevOpsLogger(options: AzureDevOpsLoggerOptions = {}): Logger {
   const innerLogger: Logger = options.toWrap || getConsoleLogger({
     ...options,
-    logError: ("logError" in options ? options.logError : (text: string | string[]) => Promise.resolve(console.log(text))),
+    logError: "logError" in options ? options.logError : consoleError
   });
   return wrapLogger(innerLogger, {
     logError: (text: string | string[]) => innerLogger.logError(addPrefix(text, `##[error]`)),
